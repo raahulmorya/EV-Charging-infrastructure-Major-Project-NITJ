@@ -1,0 +1,10 @@
+{
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32"
+    },
+    "idf.portWin": "COM6",
+    "liveServer.settings.port": 5501,
+    "files.associations": {
+        "cmath": "cpp"
+    }
+}

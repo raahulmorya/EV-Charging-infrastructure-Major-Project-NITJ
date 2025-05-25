@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmpIQ - EV Charging Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent-primary: #4CAF50;
+            --accent-secondary: #2196F3;
+            --accent-danger: #f44336;
+            --accent-warning: #FF9800;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.4s ease;
+            --transition-slow: 0.6s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            padding: 20px 0;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 2.8rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradientShift 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            margin: 5px 10px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-menu li:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--accent-primary);
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-menu li:hover::before {
+            opacity: 1;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+            min-height: 100vh;
+            transition: all var(--transition-medium);
+            /* background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); */
+            background: linear-gradient(90deg, rgba(77, 255, 107, 0.199), rgb(41, 41, 41));
+            animation: gradientShift 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        /* Connection Bar */
+        .connect-bar {
+            background: var(--bg-tertiary);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            transition: all var(--transition-fast);
+        }
+
+        .connect-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #espIpInput {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            width: 250px;
+            font-size: 14px;
+            transition: all var(--transition-fast);
+        }
+
+        #espIpInput:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        #connectBtn {
+            padding: 12px 25px;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 10px;
+            transition: all var(--transition-fast);
+        }
+
+        #connectBtn:hover {
+            background: #3d8b40;
+            transform: translateY(-2px);
+        }
+
+        #connectionStatus {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        #connectionStatus.connected {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--accent-primary);
+        }
+
+        #connectionStatus.disconnected {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--accent-danger);
+        }
+
+        /* Data Sections */
+        .data-section {
+            display: none;
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .active {
+            display: block;
+        }
+
+        .data-section h2 {
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .data-section h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        /* Data Grid */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-card {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all var(--transition-medium);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-primary);
+        }
+
+        .data-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .data-card p {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 10px 0;
+            color: var(--text-primary);
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            width: 100%;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--accent-primary), #8BC34A);
+            transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+        }
+
+        .progress-fill.animated::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.15) 25%,
+                    transparent 25%,
+                    transparent 50%,
+                    rgba(255, 255, 255, 0.15) 50%,
+                    rgba(255, 255, 255, 0.15) 75%,
+                    transparent 75%,
+                    transparent);
+            background-size: 20px 20px;
+            animation: progressStripes 1s linear infinite;
+        }
+
+        .progress-fill.low {
+            background: linear-gradient(90deg, #FF5722, #FF9800);
+        }
+
+        .progress-fill.medium {
+            background: linear-gradient(90deg, #FFC107, #FFEB3B);
+        }
+
+        .progress-fill.disconnected {
+            background: #616161;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes progressStripes {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 20px 0;
+            }
+        }
+
+        /* Buttons */
+        button {
+            padding: 12px 25px;
+            background-color: var(--accent-secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        button:hover {
+            background: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .delete-btn {
+            background-color: var(--accent-danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-right: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        .topup-btn {
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .topup-btn:hover {
+            background-color: #388E3C;
+            transform: translateY(-2px);
+        }
+
+        .btn-disabled {
+            background-color: #616161 !important;
+            color: #9E9E9E !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-success {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-danger);
+            color: white;
+        }
+
+        /* Price Controls Section */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .top-section {
+            display: flex;
+            gap: 20px;
+        }
+
+        .box,
+        .input-box {
+            background-color: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all var(--transition-medium);
+            box-shadow: var(--card-shadow);
+        }
+
+        .box:hover,
+        .input-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .price-display {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-weight: bold;
+            font-size: 2.2rem;
+            padding: 30px 40px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            min-width: 150px;
+            text-align: center;
+            transition: all var(--transition-medium);
+        }
+
+        .label {
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .energy-box {
+            flex: 2;
+            width: 350px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 25px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .price-input {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            flex: 1;
+            margin-right: 20px;
+            border: none;
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .price-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        .update-btn {
+            background-color: var(--accent-primary);
+            color: white;
+            font-weight: 600;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all var(--transition-fast);
+        }
+
+        .update-btn:hover {
+            background-color: #388E3C;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Toggle Switches */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-top: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked+.slider-round {
+            background-color: var(--accent-primary);
+        }
+
+        .switch input:checked+.slider-round:before {
+            transform: translateX(26px);
+        }
+
+        /* User Management Section */
+        .user-management {
+            padding: 20px;
+        }
+
+        #userTable {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+        }
+
+        #userTable thead th {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--bg-tertiary);
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        #userTable tbody td {
+            padding: 12px 15px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .user-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-box {
+            background-color: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-medium);
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-boxes {
+            background-color: var(--bg-tertiary);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+        }
+
+
+        .input-btn {
+            padding: 12px 15px;
+            width: 180px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .input-btn:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        .user-dropdown {
+            padding: 12px 15px;
+            width: 180px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.637);
+            color: black;
+            transition: all var(--transition-fast);
+        }
+
+        .user-dropdown:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        .user-action h3 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+        }
+
+        .user-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .uid-display {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            width: 180px;
+        }
+
+        .round-btn {
+            background-color: var(--accent-secondary);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .round-btn:hover {
+            background-color: #1976D2;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Session Info */
+        .session-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .session-info p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        #currentRate {
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .top-section {
+                flex-direction: column;
+            }
+
+            .energy-box {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .price-input {
+                margin-right: 0;
+                width: 100%;
+            }
+
+            .user-row {
+                flex-direction: column;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Status indicators */
+        .status-connected {
+            color: var(--accent-primary);
+            animation: pulse 2s infinite;
+        }
+
+        .status-disconnected {
+            color: var(--accent-danger);
+        }
+
+        .status-warning {
+            color: var(--accent-warning);
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Mobile-first adjustments */
+@media (max-width: 768px) {
+    /* Collapsible sidebar */
+    .sidebar {
+        width: 70px;
+        overflow: hidden;
+        transition: width 0.3s ease;
+    }
+    .sidebar:hover, .sidebar.active {
+        width: 250px;
+    }
+    .sidebar-header h2 {
+        font-size: 1.6rem;
+        white-space: nowrap;
+    }
+    .sidebar-menu li span {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .sidebar:hover .sidebar-menu li span,
+    .sidebar.active .sidebar-menu li span {
+        opacity: 1;
+    }
+
+    /* Main content adjustments */
+    .main-content {
+        margin-left: 70px;
+    }
+
+    /* Stack cards vertically on small screens */
+    .data-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Adjust connection bar */
+    .connect-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .col{
+        display: flex;
+        align-items: center;
+
+    }
+    #espIpInput {
+        width: 100%;
+    }
+
+    /* Price controls */
+    .input-row {
+        flex-direction: column;
+    }
+    .price-input {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+/* Hamburger menu for mobile */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>AmpIQ</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li onclick="showSection('ev')">EV Connection</li>
+            <li onclick="showSection('price')">Energy Pricing</li>
+            <li onclick="showSection('solar')">Solar Panel Status</li>
+            <li onclick="showSection('battery')">Battery Status</li>
+            <li onclick="showSection('usermgmt')">User Management</li>
+            <li onclick="showSection('System')">System Settings</li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="connect-bar">
+            <div class="col">
+                <input type="text" id="espIpInput" placeholder="ESP32 IP (e.g., 192.168.1.100)">
+                <button id="connectBtn" onclick="connectToESP()">Connect</button>
+            </div>
+            <div id="connectionStatus">Disconnected</div>
+        </div>
+
+        <!-- Price Section -->
+        <div id="price" class="data-section">
+            <div class="main-container">
+                <div class="top-section">
+                    <div class="box">
+                        <div class="price-display"><span id="currentRate">₹ - kWh</span></div>
+                        <div class="label">Current Price</div>
+                    </div>
+                    <div class="box energy-box">
+                        <div class="price-display"><span id="energyDelivered">-</span> kWh</div>
+                        <div class="label">Energy Delivered</div>
+                    </div>
+                </div>
+                <div class="input-box">
+                    <div class="input-row">
+                        <input type="number" class="price-input" id="newRate" step="0.01" min="0.01"
+                            placeholder="New Price...">
+                        <button class="update-btn" onclick="updateRate()">Update Rate</button>
+                    </div>
+                    <div class="label">Set Rate <span id="newPrice"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solar Panel Section -->
+        <div id="solar" class="data-section">
+            <h2>Solar Panel Metrics</h2>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Solar Panel Voltage</h3>
+                    <p id="solarVoltage">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Solar Panel Current</h3>
+                    <p id="solarCurrent">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Solar Panel Power</h3>
+                    <p id="solarPower">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Battery Section -->
+        <div id="battery" class="data-section">
+            <h2>Battery Metrics</h2>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Voltage</h3>
+                    <p id="batteryVoltage">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Current</h3>
+                    <p id="batteryCurrent">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Power   </h3>
+                    <p id="batteryPower">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Temperature</h3>
+                    <p id="batteryTemp">-</p>
+                </div>
+                <!-- <div class="data-grid">
+                    <div class="data-card">
+                        <h3>SoC</h3>
+                        <p id="batterySoc">-</p>
+                    </div>
+                    <div class="data-card">
+                        <h3>State of Health</h3>
+                        <div class="progress-container">
+                            <div class="soh-fill" id="sohBar"></div>
+                            <span class="progress-text" id="batterySoh">-</span>
+                        </div>
+                        <p>Estimated remaining capacity</p>
+                    </div>
+                </div> -->
+                <div class="data-card">
+                    <h3>State of Charge</h3>
+                    <div class="progress-container">
+                        <div id="batterySoc" class="progress-fill">
+                            <span class="progress-text" id="batterySocValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-card">
+                    <h3>State of Health</h3>
+                    <div class="progress-container">
+                        <div id="batterySoh" class="progress-fill">
+                            <span class="progress-text" id="batterySohValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- EV Section -->
+        <div id="ev" class="data-section">
+            <h2>EV Connection</h2>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Connection Status</h3>
+                    <p id="evStatus">❌ Disconnected</p>
+                </div>
+                <div class="data-card">
+                    <h3>Battery Voltage</h3>
+                    <p id="evVoltage">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Charging Current</h3>
+                    <p id="evCurrent">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>Temperature</h3>
+                    <p id="evTemperature">-</p>
+                </div>
+                <div class="data-card">
+                    <h3>State of Charge</h3>
+                    <div class="progress-container">
+                        <div id="socBarEV" class="progress-fill">
+                            <span class="progress-text" id="socBarEVValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-card">
+                    <h3>State of Health</h3>
+                    <div class="progress-container">
+                        <div id="sohBarEV" class="progress-fill">
+                            <span class="progress-text" id="sohBarEVValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="authSection" class="data-card">
+                    <h3>Action</h3>
+                    <!-- <button id="noBtn" class="btn-danger">Not Available</button> -->
+                    <button id="chargeBtnStatus" class="btn-danger">Not Available</button>
+                    <button id="wiredChargeBtn" class="btn-success" style="display:none;">-</button>
+                    <button id="wirelessChargeBtn" class="btn-success" style="display:none;">-</button>
+                    <button id="stopBtn" style="display:none;">Stop Charging</button>
+                    <button id="authBtn" class="btn-success" style="display:none;">Tap RFID Card to Authenticate</button>
+                    <div id="authStatus" style = "display:none;"></div>
+                    <div id="userInfo" style="display:none;">
+                        <p>User: <span id="authUserId"></span></p>
+                        <p>Balance: ₹<span id="authBalance"></span></p>
+                        <div id="sessionInfo"></div>
+                    </div>
+                </div>
+                <div class="data-card" id="chargingStats" style = "display:none;" >
+                    -
+                       
+                    
+                </div>
+                <div class="data-card" id="chargingSummary" style = "display:none;">
+                    <h3>Charging Summary</h3>
+                    -
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div id="usermgmt" class="data-section user-management">
+            <h2>User Management</h2>
+            <div class="user-row">
+                <div class="card-box">
+                    <h3>Add RFID</h3>
+                    <button class="btn-success" onclick="addRFIDCard()">Scan Card</button>
+                    <div id="rfidStatus"></div>
+                </div>
+                <div class="card-box">
+                    <select id="userSelect" class="user-dropdown">
+                        <option value="">Loading users...</option>
+                    </select>
+                    <div id="topupStatus" class="status-message"></div>
+                    <input type="number" class="input-btn" id="topupAmount" min="0" step="1"
+                        placeholder="Enter Amount..">
+                    <button class="btn-success" onclick="topUpUser()">Top Up</button>
+                </div>
+            </div>
+            <div class="card-boxes user-action">
+                <h3>Registered User Action</h3>
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>RFID UID</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Section -->
+        <div id="System" class="data-section">
+            <h2>System Settings</h2>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>LM2596 Buck Converter</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="lm2596Toggle">
+                        <span class="slider-round"></span>
+                    </label>
+                </div>
+                <div class="data-card">
+                    <h3>CN3303 Battery Charger</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="cn3303Toggle">
+                        <span class="slider-round"></span>
+                    </label>
+                </div>
+                <div class="data-card">
+                    <h3>Set DAC bit</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="dacToggle">
+                        <span class="slider-round"></span>
+                    </label>
+                    <input type="range" min="0" max="255" value="42" class="slider" id="dacSlider" disabled>
+                    <p class="value" id="dacSliderValue">42</p>
+                    <p id="lm2596Voltage">- V</p>
+                </div>
+            </div>
+            <div class="data-grid">
+                <div class="data-card">
+                    <button id="reboot-btn" class="btn-success"
+                        onclick="window.location.href='http://192.168.185.226/update'">
+                        Update System
+                    </button>
+                </div>
+                <div class="data-card">
+                    <button id="reboot-btn" class="btn-success" onclick="rebootESP32()">Reboot System</button>
+                </div>
+            </div>
+            <div id="status" style="margin-top: 20px;"></div>
+            <div class="footer">
+                <p>Firmware version v<span id="version">-</span></p>
+                <p>Last updated on May 9, 2025 23:02</p>
+                <p>Developed with ♡ © 2024 - 25 AmpIQ ™. All Rights Reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Mobile menu toggle
+            const menuToggle = document.createElement('button');
+            menuToggle.className = 'menu-toggle';
+            menuToggle.innerHTML = '☰';
+            menuToggle.onclick = () => document.querySelector('.sidebar').classList.toggle('active');
+            document.body.prepend(menuToggle);
+        // All your original JavaScript remains unchanged
+        let espIp = "";
+        let updateInterval;
+        let authenticated = false;
+        let isChargingEV = false;
+        let isSufficientBalance = false;
+
+        // Connect to ESP32
+        function connectToESP() {
+            espIp = document.getElementById("espIpInput").value;
+            if (!espIp) {
+                alert("Enter ESP32 IP!");
+                return;
+            }
+
+            connectionStatus.textContent = 'Connecting...';
+            connectionStatus.className = 'connection-status';
+
+   
+            // Test connection
+            fetchData().then(data => {
+                if (data) {
+                    updateDashboard(data);
+                    // Start periodic updates
+                    clearInterval(updateInterval);
+                    updateInterval = setInterval(async () => {
+                        const newData = await fetchData();
+                        updateDashboard(newData);
+                    }, 1000);
+                }
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Try to auto-connect if IP is in localStorage
+            const savedIp = localStorage.getItem('esp32_ip');
+            if (savedIp) {
+                espIpInput.value = savedIp;
+                connectToESP();
+            }
+        });
+
+        // Save IP when connecting
+        espIpInput.addEventListener('change', () => {
+            localStorage.setItem('esp32_ip', espIpInput.value);
+        });
+        // Show/hide sections
+        function showSection(sectionId) {
+            if (sectionId == 'usermgmt') {
+                loadUsers();
+            }
+            document.querySelectorAll(".data-section").forEach(section => {
+                section.classList.remove("active");
+            });
+            document.getElementById(sectionId).classList.add("active");
+        }
+
+        // Fetch data from ESP32 API
+        async function fetchData() {
+            try {
+                const response = await fetch(`http://${espIp}/data`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.className = 'connection-status disconnected';
+                clearInterval(updateInterval);
+                return null;
+            }
+        }
+
+        function updateDashboard(data) {
+            if (!data) return;
+
+            // Update connection status
+            connectionStatus.textContent = 'Connected';
+            connectionStatus.className = 'connection-status connected';
+            document.getElementById("solarVoltage").textContent = `${data.lm2596_voltage} V`;
+            document.getElementById("lm2596Voltage").textContent = `${data.lm2596_voltage} V`;
+            document.getElementById("solarCurrent").textContent = `${data.lm2596_current} mA`;
+            document.getElementById("solarPower").textContent = `${data.lm2596_power} mW`;
+
+            // Update Battery
+            document.getElementById("batteryVoltage").textContent = `${data.battery_voltage} V`;
+            document.getElementById("batteryCurrent").textContent = `${data.battery_current} mA`;
+            document.getElementById("batteryPower").textContent = `${data.battery_power} mW`;
+            // document.getElementById("batterySoc").textContent = `${data.soc} %`;
+            document.getElementById("batteryTemp").textContent = `${data.temp} °C`;
+            document.getElementById("currentRate").textContent = `₹ ${data.rate} `;
+            document.getElementById("version").textContent = `${data.version} `;
+            document.getElementById("energyDelivered").textContent = `${data.total_energy}`;
+            chargingRate = data.rate;
+
+            updateProgressBar('batterySoc', data.soc);
+            updateProgressBar('batterySoh', data.soh);
+            
+            const tempElement = document.getElementById("batteryTemp");
+            if (data.batteryTemp > 45) tempElement.style.color = "red";
+            else if (data.batteryTemp > 35) tempElement.style.color = "orange";
+            else tempElement.style.color = "green";
+
+            updateEVData();
+        }
+
+        
+
+        document.getElementById('dacSlider').addEventListener('input', (e) => {
+            const dacValue = parseInt(e.target.value);
+            // console.log(dacValue);
+            document.getElementById('dacSliderValue').textContent = dacValue;
+            document.getElementById('dacSlider').value = dacValue;
+            setDAC(dacValue);
+        });
+
+        function setDAC(value) {
+            fetch(`http://${espIp}/setdac?value=${value}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("DAC Updated:", data);
+                    updateVoltageDisplay(data.voltage);
+                });
+        }
+
+        // Add RFID Card
+        function addRFIDCard() {
+            const statusElement = document.getElementById("rfidStatus");
+            statusElement.textContent = "Tap card now...";
+
+            fetch(`http://${espIp}/addcard`, { method: "POST" })
+                .then(response => response.text())
+                .then(data => {
+                    statusElement.textContent = data;
+                    statusElement.textContent = "";
+                    document.getElementById("rfidStatus").innerHTML += `<p>${data}</p>`;
+                })
+                .catch(error => {
+                    statusElement.textContent = "Error: " + error;
+                    console.log("NO response");
+                });
+        }
+        // Initialize
+        showSection('ev'); // Default section
+
+        function loadUsers() {
+            fetch(`http://${espIp}/listusers`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network error");
+                    return response.json();
+                })
+                .then(users => {
+                    const userSelect = document.getElementById("userSelect");
+                    const userTableBody = document.getElementById("userTableBody");
+
+                    // Clear existing options but keep first placeholder
+                    userSelect.innerHTML = '<option value="">Select User</option>';
+                    userTableBody.innerHTML = '';
+
+                    if (users.length === 0) {
+                        userTableBody.innerHTML = '<tr><td colspan="3">No registered users</td></tr>';
+                        return;
+                    }
+
+                    // Populate dropdown and table
+                    users.forEach(user => {
+                        // Add to dropdown
+                        const option = document.createElement("option");
+                        option.value = user.uid;
+                        option.textContent = `${user.uid} (₹ ${user.balance.toFixed(2)})`;
+                        userSelect.appendChild(option);
+
+                        // Add to table
+                        const row = userTableBody.insertRow();
+                        row.insertCell(0).textContent = user.uid;
+                        row.insertCell(1).textContent = `₹ ${user.balance.toFixed(2)}`;
+
+                        // Add action buttons
+                        const actionCell = row.insertCell(2);
+
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.textContent = "Delete";
+                        deleteBtn.className = "delete-btn";
+                        deleteBtn.onclick = () => deleteUser(user.uid);
+                        actionCell.appendChild(deleteBtn);
+
+                        const topupBtn = document.createElement("button");
+                        topupBtn.textContent = "Top Up";
+                        topupBtn.className = "topup-btn";
+                        topupBtn.onclick = () => {
+                            document.getElementById("userSelect").value = user.uid;
+                            document.getElementById("topupAmount").focus();
+                        };
+                        actionCell.appendChild(topupBtn);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading users:", error);
+                    document.getElementById("userTableBody").innerHTML =
+                        '<tr><td colspan="3">Error loading users</td></tr>';
+                });
+        }
+
+        function topUpUser() {
+            const uid = document.getElementById("userSelect").value;
+            const amount = parseFloat(document.getElementById("topupAmount").value);
+
+            if (!uid || isNaN(amount)) {
+                alert("Select user and enter amount!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("uid", uid);
+            formData.append("amount", amount);
+
+            fetch(`http://${espIp}/topup`, {
+                method: "POST",
+                body: formData
+            })
+                .then(r => r.text())
+                .then(msg => {
+                    document.getElementById("topupStatus").textContent = msg;
+                    loadUsers(); // Refresh list
+                });
+        }
+
+        function populateUserTable(users) {
+            const tableBody = document.getElementById("userTableBody");
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = tableBody.insertRow();
+
+                // UID cell
+                row.insertCell(0).textContent = user.uid;
+
+                // Balance cell
+                row.insertCell(1).textContent = '$' + user.balance.toFixed(2);
+
+                // Actions cell
+                const actionCell = row.insertCell(2);
+
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteUser(user.uid);
+                actionCell.appendChild(deleteBtn);
+
+                // Top-up button
+                const topupBtn = document.createElement('button');
+                topupBtn.textContent = 'Top Up';
+                topupBtn.className = 'topup-btn';
+                topupBtn.onclick = () => {
+                    document.getElementById('userSelect').value = user.uid;
+                    document.getElementById('topupAmount').focus();
+                };
+                actionCell.appendChild(topupBtn);
+            });
+        }
+
+        function deleteUser(uid) {
+            if (!confirm(`Delete user ${uid}? This cannot be undone!`)) return;
+
+            const formData = new FormData();
+            formData.append('uid', uid);
+
+            fetch(`http://${espIp}/deleteuser`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    loadUsers(); // Refresh the table
+                })
+                .catch(error => {
+                    console.error('Delete failed:', error);
+                    alert('Delete failed: ' + error);
+                });
+        }
+
+
+        const statusDiv = document.getElementById('status');
+        async function rebootESP32() {
+            if (!confirm("Are you sure you want to reboot the ESP32?")) return;
+
+            statusDiv.textContent = "Sending reboot command...";
+            statusDiv.style.color = "black";
+
+            try {
+                const response = await fetch(`http://${espIp}/reboot`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) throw new Error("Reboot command failed");
+
+                statusDiv.textContent = "Reboot command sent successfully!";
+                statusDiv.style.color = "green";
+
+                // Try to reconnect after 10 seconds
+                setTimeout(() => {
+                    statusDiv.textContent = "Attempting to reconnect...";
+                    fetchData();
+                }, 3000);
+            } catch (error) {
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.style.color = "red";
+            }
+
+            // Try to reconnect after 10 seconds
+            setTimeout(() => {
+                statusDiv.textContent = "";
+            }, 3000);
+        }
+
+
+        // Update EV Data Display
+        function updateEVData() {
+            fetch(`http://${espIp}/evdata`)
+                .then(r => r.json())
+                .then(data => {
+
+                   
+                    const statusElem = document.getElementById('evStatus');
+                    statusElem.textContent = data.connected ? '✅ Connected' : '❌ Disconnected';
+                    statusElem.style.color = data.connected ? 'green' : 'red';
+
+                    // Update metrics or show dashes when disconnected
+                    document.getElementById('evVoltage').textContent =
+                        data.connected ? `${data.voltage.toFixed(1)} V` : "-";
+                    document.getElementById('evCurrent').textContent =
+                        data.connected ? `${data.current.toFixed(1)} A` : "-";
+                    document.getElementById('evTemperature').textContent =
+                        data.connected ? `${data.Temperature.toFixed(1)} °C` : "-";
+
+                    // Grey out progress bars when disconnected
+                    updateProgressBar('socBarEV', data.connected ? data.soc : 0);
+                    updateProgressBar('sohBarEV', data.connected ? data.soh : 0);
+                    if (data.connected && !authenticated){
+                        let btn = document.getElementById("chargeBtnStatus");
+                        btn.style = "display: none ;";
+                        let auth_btn = document.getElementById("authBtn");
+                        auth_btn.style = "display:;";
+                        let wiredBtn = document.getElementById("wiredChargeBtn");
+                        wiredBtn.style = "display: ;";
+                        let wirelessBtn = document.getElementById("wirelessChargeBtn");
+                        wirelessBtn.style = "display: ;";
+                    }
+                    else if(!data.connected) {
+                        let btn = document.getElementById("chargeBtnStatus");
+                        btn.style = "display: ;";
+                        let auth_btn = document.getElementById("authBtn");
+                        auth_btn.style = "display: none;";
+                        let wiredBtn = document.getElementById("wiredChargeBtn");
+                        wiredBtn.style = "display: none;";
+                        let wirelessBtn = document.getElementById("wirelessChargeBtn");
+                        wirelessBtn.style = "display: none;";
+                        let stopBtn = document.getElementById("stopBtn");
+                        stopBtn.style = "display: none;";
+                        let userInfoBtn = document.getElementById("userInfo");
+                        userInfoBtn.style = "display: none;";
+                        let chargingStatsCard = document.getElementById("chargingStats");
+                        chargingStatsCard.style = "display: none;";
+                        authenticated = false;
+
+                    }
+                    if (data.connected && authenticated && !isChargingEV && isSufficientBalance){
+                        document.getElementById('wiredChargeBtn').style.display = '';
+                        document.getElementById('wirelessChargeBtn').style.display = '';
+                        document.getElementById('wiredChargeBtn').textContent = 'Start Wired Charging';
+                        document.getElementById('wirelessChargeBtn').textContent = 'Start Wireless Charging';
+                    } else {
+                        document.getElementById('wiredChargeBtn').style.display = 'none';
+                        document.getElementById('wirelessChargeBtn').style.display = 'none';
+                        // document.getElementById('stopBtn').style.display = 'none';
+                        document.getElementById('authStatus').style = "display:none;";
+                        // document.getElementById('userInfo').style.display = 'none';
+                    }
+                });
+                
+            }
+            
+        
+        function updateProgressBar(id, value) {
+            const bar = document.getElementById(`${id}`);
+            const text = document.getElementById(`${id}Value`);
+
+            // Check if elements exist
+            if (!bar || !text) {
+                console.error(`Progress bar elements not found for ID: ${id}`);
+                return;
+            }
+
+            // Update only if value is a number
+            if (typeof value !== 'number' || isNaN(value)) {
+                console.warn(`Invalid value for ${id}:`, value);
+                value = 0; // Default to 0 if invalid
+            }
+
+            // Constrain value between 0-100
+            value = Math.max(0, Math.min(100, value));
+
+            // Update display
+            bar.style.width = `${value}%`;
+            text.textContent = `${Math.round(value)}%`;
+
+            // Update color classes
+            bar.className = 'progress-fill'; // Reset classes
+
+            if (value === 0) {
+                bar.classList.add('disconnected');
+            } else if (value < 30) {
+                bar.classList.add('low');
+            } else if (value < 70) {
+                bar.classList.add('medium');
+            }
+
+            // Optional: Add/remove charging animation
+            const isCharging = document.getElementById('chargeBtn')?.textContent.includes('Stop');
+            bar.classList.toggle('animated', isCharging && id === 'soc');
+        }
+
+
+        function updateRate() {
+            const newRate = parseFloat(document.getElementById('newRate').value);
+            if (isNaN(newRate) || newRate <= 0) {
+                alert("Enter valid rate!");
+                return;
+            }
+
+            fetch(`http://${espIp}/setrate?rate=${newRate}`)
+                .then(r => r.text())
+                .then(msg => {
+                    alert(msg);
+                    document.getElementById('currentRate').textContent =
+                        `$${newRate.toFixed(3)}/kWh`;
+                    document.getElementById('newPrice').textContent =
+                        "Successful";
+
+                });
+        }
+
+        // Global variables
+        let currentUser = null;
+        let chargingInterval;
+        let chargingStartTime;
+        let chargingRate = 0.15; // $ per minute
+        let selectedMinutes = 30; // Default charging time
+        const minimum_balance = 15;
+
+        // Authentication Handler
+        document.getElementById('authBtn').addEventListener('click', () => {
+            fetch(`http://${espIp}/authCard`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        authenticated = true;
+                        document.getElementById("authBtn").style = "display:none;";
+                        currentUser = data.user;
+                        document.getElementById('authUserId').textContent = currentUser.uid;
+                        document.getElementById('authBalance').textContent = currentUser.balance.toFixed(2);
+                        document.getElementById('userInfo').style.display = 'block';
+                        document.getElementById('authStatus').style = "display:;";
+                        document.getElementById('authStatus').innerHTML = '<span style="color:green">✓ Authenticated</span>';
+                        
+                        // Update charge button state
+                        updateChargeButtonAuth();
+                    } else {
+
+                        document.getElementById("chargeBtnStatus").style = "display:;";
+                        // document.getElementById("authBtn").style = "display:;";
+                        document.getElementById('authStatus').innerHTML = '<span style="color:red">✗ ' + data.message + '</span>';
+                        authenticated = false;
+                    }
+                });
+        });
+        
+         // Set up button event listeners
+            document.getElementById('wiredChargeBtn').addEventListener('click', startWiredCharging);
+            document.getElementById('wirelessChargeBtn').addEventListener('click', startWirelessCharging);
+            document.getElementById('stopBtn').addEventListener('click', stopCharging);
+
+            // Charge Control Functions
+                function startWiredCharging() {
+                    document.getElementById('userInfo').style.display = 'none';
+                    document.getElementById('wiredChargeBtn').disabled = true;
+                    document.getElementById('wirelessChargeBtn').disabled = true;
+                    document.getElementById('wiredChargeBtn').style.display = 'none';
+                    document.getElementById('wirelessChargeBtn').style.display = 'none';
+                    isChargingEV = true;
+                    
+                    fetch(`http://${espIp}/startCharging?configCharge=wired`, { method: 'POST' })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log('Wired charging started:', data);
+                        updateUIForCharging('wired');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        enableChargeButtons();
+                    });
+                }
+                
+                function startWirelessCharging() {
+                    document.getElementById('userInfo').style.display = 'none';
+                    document.getElementById('wiredChargeBtn').disabled = true;
+                    document.getElementById('wirelessChargeBtn').disabled = true;
+                    isChargingEV = true;
+                    
+                    fetch(`http://${espIp}/startCharging?configCharge=wireless`, { method: 'POST' })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log('Wireless charging started:', data);
+                        updateUIForCharging('wireless');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        enableChargeButtons();
+                    });
+                }
+                
+                function stopCharging() {
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('chargingStats').style.display = 'none';
+                    isChargingEV = false;
+
+                    
+                  fetch(`http://${espIp}/endCharging`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Charging stopped:', data);
+                            resetUIAfterCharging();
+                            
+                            if (data.energy_kwh) {
+                                updateChargingSessionSummary(data);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            document.getElementById('stopBtn').disabled = false;
+                        });
+                }
+                // UI Update Functions
+                    function updateUIForCharging(mode) {
+                        // Show stop button
+                        document.getElementById('stopBtn').style.display = '';
+
+                        // Update button states
+                        if (mode === 'wired') {
+                            document.getElementById('wiredChargeBtn').classList.replace('btn-danger', 'btn-success');
+                            document.getElementById('wiredChargeBtn').style.display = 'none';
+                            document.getElementById('wirelessChargeBtn').style.display = 'none';
+                        } else {
+                            document.getElementById('wirelessChargeBtn').classList.replace('btn-danger', 'btn-success');
+                            document.getElementById('wiredChargeBtn').style.display = 'none';
+                            document.getElementById('wirelessChargeBtn').style.display = 'none';
+                        }
+
+                        // Start updating charging stats
+                        startChargingStatsUpdates();
+                    }
+
+                    function resetUIAfterCharging() {
+                        // Reset buttons
+                        document.getElementById('wiredChargeBtn').classList.replace('btn-success', 'btn-success');
+                        document.getElementById('wirelessChargeBtn').classList.replace('btn-success', 'btn-success');
+                        document.getElementById('wiredChargeBtn').style.display = '';
+                        document.getElementById('wirelessChargeBtn').style.display = '';
+                        document.getElementById('stopBtn').style.display = 'none';
+
+                        enableChargeButtons();
+                    }
+
+                    function enableChargeButtons() {
+                        document.getElementById('wiredChargeBtn').disabled = false;
+                        document.getElementById('wirelessChargeBtn').disabled = false;
+                        document.getElementById('stopBtn').disabled = false;
+                    }
+
+                    // Real-time Stats Updates
+                    let statsInterval;
+                    function startChargingStatsUpdates() {
+                        // Clear any existing interval
+                        if (statsInterval) clearInterval(statsInterval);
+
+                        // Update immediately and every 5 seconds
+                        updateChargingStats();
+                        statsInterval = setInterval(updateChargingStats, 5000);
+                    }
+
+                    function updateChargingStats() {
+                       fetch(`http://${espIp}/evdata`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.connected && data.charging) {
+                                    document.getElementById('chargingStats').style.display = '';
+                                    document.getElementById('chargingStats').innerHTML = `
+                                     <h3>Charging Stats</h3>
+                                     <span>Charging Power: ${(data.current * data.voltage).toFixed(2)}W</span>
+                                 `;
+                    // <span>Charging Current: ${data.current.toFixed(2)}A</span>
+                    // <span>Charging Voltage: ${data.voltage.toFixed(2)}V</span>
+                                }
+                            });
+                    }
+
+                    function updateChargingSessionSummary(sessionData) {
+                            const summaryDiv = document.getElementById('chargingSummary');
+                            summaryDiv.style.display = '';
+                            summaryDiv.innerHTML = `
+        <h4>Charging Complete</h4>
+        <span>Energy Delivered: ${sessionData.energy_kwh.toFixed(3)} kWh</span>
+        <span>Cost: ₹ ${sessionData.cost.toFixed(2)}</span>
+        ${sessionData.balance_remaining ?
+                                    `<span>Remaining Balance: ₹ ${sessionData.balance_remaining.toFixed(2)}</span>` : ''}
+    `;
+                            summaryDiv.style.display = 'block';
+
+                            // Hide after 10 seconds
+                            setTimeout(() => summaryDiv.style.display = 'none', 10000);
+                        }
+
+      
+
+        function updateChargeButtonAuth() {
+            const btn = document.getElementById('chargeBtnStatus');
+
+            // console.log("no use");
+            if (!currentUser) {
+                btn.textContent = 'Not Available';
+                btn.style = "display:;";
+                btn.className = 'btn-disabled';
+                btn.disabled = true;
+                console.log("No user Authenticated");
+            } else if (currentUser.balance < minimum_balance) {
+                isSufficientBalance = false;
+                btn.textContent = 'Please Recharge';
+                btn.style = "display:;";
+                btn.className = 'btn-disabled';
+                btn.disabled = true;
+                console.log("Low Balance");
+            } else {
+                isSufficientBalance = true;
+                btn.className = ' btn-success';
+                btn.disabled = false;
+                btn.className = ' btn-success';
+                btn.disabled = false;
+                console.log("start use");
+            }
+        }
+
+        document.getElementById("lm2596Toggle").addEventListener("change", function () {
+            const state = this.checked ? "on" : "off";
+            fetch(`http://${espIp}/chip-enable?lm2596=${state}`)
+                .then(res => res.text())
+                .then(data => console.log("LM2596 Response:", data))
+                .catch(err => console.error("LM2596 Error:", err));
+        });
+
+        document.getElementById("cn3303Toggle").addEventListener("change", function () {
+            const state = this.checked ? "on" : "off";
+            fetch(`http://${espIp}/chip-enable?cn3303=${state}`)
+                .then(res => res.text())
+                .then(data => console.log("CN3303 Response:", data))
+                .catch(err => console.error("CN3303 Error:", err));
+        });
+
+        document.getElementById("dacToggle").addEventListener("change", function () {
+            const state = this.checked ? "on" : "off";
+            console.log(state);
+            if (state == "on")
+                document.getElementById('dacSlider').disabled = false;
+            else if (state == "off")
+                document.getElementById('dacSlider').disabled = true;
+
+        });
+    </script>
+</body>
+
+</html>
