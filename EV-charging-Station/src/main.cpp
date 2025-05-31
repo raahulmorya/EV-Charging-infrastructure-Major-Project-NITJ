@@ -210,7 +210,7 @@ void saveEnergyData();
     ///////  Function definition end    //////////////////////////////
 
     // Setup Function (modified for FreeRTOS)
-    void setup()
+void setup()
 {
     Serial.begin(115200);
 
@@ -220,9 +220,9 @@ void saveEnergyData();
     pinMode(WIRELESS_CHARGE_PIN, OUTPUT);
     digitalWrite(WIRELESS_CHARGE_PIN, LOW);
     pinMode(BUCK_PIN, OUTPUT);
-    digitalWrite(BUCK_PIN, HIGH);
+    digitalWrite(BUCK_PIN, HIGH); //Active LOW
     pinMode(CHARGER_PIN, OUTPUT);
-    digitalWrite(CHARGER_PIN, LOW);
+    digitalWrite(CHARGER_PIN, LOW);    
 
     // Initialize communication interfaces
     Wire.begin();

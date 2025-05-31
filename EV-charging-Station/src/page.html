@@ -1210,8 +1210,8 @@
                         <input type="checkbox" id="dacToggle">
                         <span class="slider-round"></span>
                     </label>
-                    <input type="range" min="0" max="255" value="42" class="slider" id="dacSlider" disabled>
-                    <p class="value" id="dacSliderValue">42</p>
+                    <input type="range" min="0" max="255" value="0" class="slider" id="dacSlider" disabled>
+                    <p class="value" id="dacSliderValue">-</p>
                     <p id="lm2596Voltage">- V</p>
                 </div>
             </div>
@@ -1900,20 +1900,39 @@
         }
 
         document.getElementById("lm2596Toggle").addEventListener("change", function () {
-            const state = this.checked ? "on" : "off";
-            fetch(`http://${espIp}/chip-enable?lm2596=${state}`)
-                .then(res => res.text())
-                .then(data => console.log("LM2596 Response:", data))
-                .catch(err => console.error("LM2596 Error:", err));
-        });
+                const state = this.checked ? "on" : "off";
+                const formData = new URLSearchParams();
+                formData.append("lm2596", state);
 
-        document.getElementById("cn3303Toggle").addEventListener("change", function () {
-            const state = this.checked ? "on" : "off";
-            fetch(`http://${espIp}/chip-enable?cn3303=${state}`)
-                .then(res => res.text())
-                .then(data => console.log("CN3303 Response:", data))
-                .catch(err => console.error("CN3303 Error:", err));
-        });
+                fetch(`http://${espIp}/setChipStatus`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: formData.toString()
+                })
+                    .then(res => res.text())
+                    .then(data => console.log("LM2596 Response:", data))
+                    .catch(err => console.error("LM2596 Error:", err));
+            });
+
+            document.getElementById("cn3303Toggle").addEventListener("change", function () {
+                const state = this.checked ? "on" : "off";
+                const formData = new URLSearchParams();
+                formData.append("cn3303", state);
+
+                fetch(`http://${espIp}/setChipStatus`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: formData.toString()
+                })
+                    .then(res => res.text())
+                    .then(data => console.log("CN3303 Response:", data))
+                    .catch(err => console.error("CN3303 Error:", err));
+            });
+
 
         document.getElementById("dacToggle").addEventListener("change", function () {
             const state = this.checked ? "on" : "off";
