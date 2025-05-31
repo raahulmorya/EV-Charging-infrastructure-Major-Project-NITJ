@@ -19,6 +19,9 @@
 #define WIRED_CHARGE_PIN 27
 #define BUCK_PIN 4
 #define CHARGER_PIN 2
+#define SS_PIN 14
+#define RST_PIN 17
+
 #define NTC_NOMINAL_RESISTANCE 10000
 #define NTC_NOMINAL_TEMP 25.0
 #define NTC_B_VALUE 3950
@@ -26,10 +29,9 @@
 #define EEPROM_SIZE 512
 #define ENERGY_EEPROM_ADDR 300 // Use an address after your user data
 #define ENERGY_PRICE_ADDR 200 // Use an address after your user data
-#define SS_PIN 14
-#define RST_PIN 17
 #define MAX_USERS 4
 #define CAN_TIMEOUT 1800
+
 // User storage configuration
 #define USER_STORAGE_SIZE 32 // Bytes per user
 #define MAX_UID_LENGTH 14    // 7 bytes UID in HEX (2 chars per byte) + null terminator
@@ -51,7 +53,7 @@ SemaphoreHandle_t xSensorDataMutex = NULL;
 SemaphoreHandle_t xEEPROMMutex = NULL;
 SemaphoreHandle_t xUserMutex = NULL;
 
-// Global Objects (same as before)
+// Global Objects 
 MCP2515 can(5);
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 WebServer server(80);
@@ -300,9 +302,8 @@ void saveEnergyData();
     server.on("/update", HTTP_POST, []()
               { server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK"); }, handleUpdate);
 
-    // server.setTimeout(120); // 120 seconds (adjust as needed)
-    // Enable mDNS (optional but helpful)
-    if (!MDNS.begin("esp32"))
+    // Enable mDNS 
+    if (!MDNS.begin("ampiq"))
     {
         Serial.println("Error setting up MDNS responder!");
     }
@@ -588,10 +589,13 @@ void vSensorTask(void *pvParameters)
 
 void handleRoot()
 {
-    String html = "Welcome to AmpIQ Charging Station";
+    String html = "<!DOCTYPE html><html><head><title>AmpIQ Charging Station</title></head>";
+    html += "<body><h1>Welcome to AmpIQ Charging Station</h1>";
+    html += "<p>IP Address: " + WiFi.localIP().toString() + "</p>";
+    html += "</body></html>";
+
     server.send(200, "text/html", html);
 }
-
 void handleData()
 {
     // Local copies of sensor data
