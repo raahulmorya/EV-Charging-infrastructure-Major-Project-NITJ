@@ -64,7 +64,7 @@
         }
 
         .sidebar-header h2 {
-            font-size: 2.8rem;
+            font-size: 1.8rem;
             font-weight: 600;
             background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
@@ -133,10 +133,6 @@
             padding: 30px;
             min-height: 100vh;
             transition: all var(--transition-medium);
-            /* background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); */
-            background: linear-gradient(90deg, rgba(77, 255, 107, 0.199), rgb(41, 41, 41));
-            animation: gradientShift 8s ease infinite;
-            background-size: 200% 200%;
         }
 
         /* Connection Bar */
@@ -887,7 +883,7 @@
         width: 250px;
     }
     .sidebar-header h2 {
-        font-size: 1.6rem;
+        font-size: 1.2rem;
         white-space: nowrap;
     }
     .sidebar-menu li span {
@@ -913,12 +909,6 @@
     .connect-bar {
         flex-direction: column;
         gap: 10px;
-    }
-
-    .col{
-        display: flex;
-        align-items: center;
-
     }
     #espIpInput {
         width: 100%;
@@ -985,7 +975,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="connect-bar">
-            <div class="col">
+            <div>
                 <input type="text" id="espIpInput" placeholder="ESP32 IP (e.g., 192.168.1.100)">
                 <button id="connectBtn" onclick="connectToESP()">Connect</button>
             </div>
@@ -1210,20 +1200,20 @@
                         <input type="checkbox" id="dacToggle">
                         <span class="slider-round"></span>
                     </label>
-                    <input type="range" min="0" max="255" value="0" class="slider" id="dacSlider" disabled>
-                    <p class="value" id="dacSliderValue">-</p>
+                    <input type="range" min="0" max="255" value="42" class="slider" id="dacSlider" disabled>
+                    <p class="value" id="dacSliderValue">42</p>
                     <p id="lm2596Voltage">- V</p>
                 </div>
             </div>
             <div class="data-grid">
                 <div class="data-card">
-                    <button id="reboot-btn" class="btn-success"
+                    <button id="reboot-btn" class="round-btn"
                         onclick="window.location.href='http://192.168.185.226/update'">
                         Update System
                     </button>
                 </div>
                 <div class="data-card">
-                    <button id="reboot-btn" class="btn-success" onclick="rebootESP32()">Reboot System</button>
+                    <button id="reboot-btn" class="round-btn" onclick="rebootESP32()">Reboot System</button>
                 </div>
             </div>
             <div id="status" style="margin-top: 20px;"></div>
@@ -1591,26 +1581,12 @@
                         btn.style = "display: none ;";
                         let auth_btn = document.getElementById("authBtn");
                         auth_btn.style = "display:;";
-                        let wiredBtn = document.getElementById("wiredChargeBtn");
-                        wiredBtn.style = "display: ;";
-                        let wirelessBtn = document.getElementById("wirelessChargeBtn");
-                        wirelessBtn.style = "display: ;";
                     }
                     else if(!data.connected) {
                         let btn = document.getElementById("chargeBtnStatus");
                         btn.style = "display: ;";
                         let auth_btn = document.getElementById("authBtn");
                         auth_btn.style = "display: none;";
-                        let wiredBtn = document.getElementById("wiredChargeBtn");
-                        wiredBtn.style = "display: none;";
-                        let wirelessBtn = document.getElementById("wirelessChargeBtn");
-                        wirelessBtn.style = "display: none;";
-                        let stopBtn = document.getElementById("stopBtn");
-                        stopBtn.style = "display: none;";
-                        let userInfoBtn = document.getElementById("userInfo");
-                        userInfoBtn.style = "display: none;";
-                        let chargingStatsCard = document.getElementById("chargingStats");
-                        chargingStatsCard.style = "display: none;";
                         authenticated = false;
 
                     }
@@ -1932,7 +1908,6 @@
                     .then(data => console.log("CN3303 Response:", data))
                     .catch(err => console.error("CN3303 Error:", err));
             });
-
 
         document.getElementById("dacToggle").addEventListener("change", function () {
             const state = this.checked ? "on" : "off";
